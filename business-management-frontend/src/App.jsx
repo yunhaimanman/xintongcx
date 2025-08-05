@@ -7,6 +7,12 @@ import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 import Projects from '@/pages/Projects';
 import Tickets from '@/pages/Tickets';
+import Customers from '@/pages/Customers';
+import Users from '@/pages/Users';
+import Roles from '@/pages/Roles';
+import Reports from '@/pages/Reports';
+import Settings from '@/pages/Settings';
+import Profile from '@/pages/Profile';
 import './App.css';
 
 function App() {
@@ -25,14 +31,14 @@ function App() {
             }
           >
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="users" element={<div className="p-6">用户管理页面开发中...</div>} />
-            <Route path="roles" element={<div className="p-6">角色权限页面开发中...</div>} />
-            <Route path="customers" element={<div className="p-6">客户管理页面开发中...</div>} />
+            <Route path="users" element={<Users />} />
+            <Route path="roles" element={<Roles />} />
+            <Route path="customers" element={<Customers />} />
             <Route path="projects" element={<Projects />} />
             <Route path="tickets" element={<Tickets />} />
-            <Route path="reports" element={<div className="p-6">数据报表页面开发中...</div>} />
-            <Route path="settings" element={<div className="p-6">系统设置页面开发中...</div>} />
-            <Route path="profile" element={<div className="p-6">个人资料页面开发中...</div>} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
         </Routes>
       </Router>
