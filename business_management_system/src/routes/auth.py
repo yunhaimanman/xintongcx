@@ -1,165 +1,113 @@
-from flask import Blueprint, request, jsonify, current_app
-from functools import wraps
+from flask import Blueprint, request, jsonify, session
+from src.models.user import db, User
+from datetime import datetime
 import jwt
-from datetime import datetime, timedelta
-from src.models.user import db, User, Role, Permission
+import os
 
 auth_bp = Blueprint('auth', __name__)
 
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        auth_header = request.headers.get('Authorization')
-        
-        if auth_header:
-            try:
-                token = auth_header.split(" ")[1]  # Bearer <token>
-            except IndexError:
-                return jsonify({'message': 'Token format invalid'}), 401
-        
-        if not token:
-            return jsonify({'message': 'Token is missing'}), 401
-        
-        try:
-            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
-            current_user = User.query.filter_by(id=data['user_id']).first()
-            if not current_user or not current_user.is_active:
-                return jsonify({'message': 'Token is invalid'}), 401
-        except jwt.ExpiredSignatureError:
-            return jsonify({'message': 'Token has expired'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'message': 'Token is invalid'}), 401
-        
-        return f(current_user, *args, **kwargs)
-    
-    return decorated
-
-def permission_required(permission_name):
-    def decorator(f):
-        @wraps(f)
-        def decorated(current_user, *args, **kwargs):
-            if not current_user.has_permission(permission_name):
-                return jsonify({'message': 'Insufficient permissions'}), 403
-            return f(current_user, *args, **kwargs)
-        return decorated
-    return decorator
+# JWT密钥
+JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
+    """用户登录"""
     try:
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
         
         if not username or not password:
-            return jsonify({'message': 'Username and password are required'}), 400
+            return jsonify({'error': '用户名和密码不能为空'}), 400
         
+        # 查找用户
         user = User.query.filter_by(username=username).first()
+        if not user or not user.check_password(password):
+            return jsonify({'error': '用户名或密码错误'}), 401
         
-        if user and user.check_password(password) and user.is_active:
-            token = jwt.encode({
-                'user_id': user.id,
-                'exp': datetime.utcnow() + timedelta(hours=24)
-            }, current_app.config['SECRET_KEY'], algorithm='HS256')
-            
-            return jsonify({
-                'token': token,
-                'user': user.to_dict()
-            }), 200
-        else:
-            return jsonify({'message': 'Invalid credentials'}), 401
-            
-    except Exception as e:
-        return jsonify({'message': str(e)}), 500
-
-@auth_bp.route('/register', methods=['POST'])
-def register():
-    try:
-        data = request.get_json()
-        username = data.get('username')
-        email = data.get('email')
-        password = data.get('password')
-        full_name = data.get('full_name')
+        # 检查用户状态
+        if user.status != 'active':
+            return jsonify({'error': '账户已被禁用'}), 401
         
-        if not all([username, email, password, full_name]):
-            return jsonify({'message': 'All fields are required'}), 400
-        
-        # 检查用户是否已存在
-        if User.query.filter_by(username=username).first():
-            return jsonify({'message': 'Username already exists'}), 400
-        
-        if User.query.filter_by(email=email).first():
-            return jsonify({'message': 'Email already exists'}), 400
-        
-        # 创建新用户
-        user = User(
-            username=username,
-            email=email,
-            full_name=full_name,
-            phone=data.get('phone'),
-            department=data.get('department'),
-            position=data.get('position')
-        )
-        user.set_password(password)
-        
-        # 分配默认角色（员工）
-        default_role = Role.query.filter_by(name='employee').first()
-        if default_role:
-            user.roles.append(default_role)
-        
-        db.session.add(user)
+        # 更新最后登录时间
+        user.last_login = datetime.utcnow()
         db.session.commit()
         
-        return jsonify({'message': 'User created successfully', 'user': user.to_dict()}), 201
+        # 生成JWT token
+        token_payload = {
+            'user_id': user.id,
+            'username': user.username,
+            'role': user.role.name if user.role else None,
+            'exp': datetime.utcnow().timestamp() + 86400  # 24小时过期
+        }
+        token = jwt.encode(token_payload, JWT_SECRET, algorithm='HS256')
+        
+        return jsonify({
+            'message': '登录成功',
+            'token': token,
+            'user': user.to_dict()
+        })
         
     except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': str(e)}), 500
-
-@auth_bp.route('/profile', methods=['GET'])
-@token_required
-def get_profile(current_user):
-    return jsonify({'user': current_user.to_dict()}), 200
-
-@auth_bp.route('/profile', methods=['PUT'])
-@token_required
-def update_profile(current_user):
-    try:
-        data = request.get_json()
-        
-        # 更新允许的字段
-        if 'full_name' in data:
-            current_user.full_name = data['full_name']
-        if 'email' in data:
-            # 检查邮箱是否已被其他用户使用
-            existing_user = User.query.filter_by(email=data['email']).first()
-            if existing_user and existing_user.id != current_user.id:
-                return jsonify({'message': 'Email already exists'}), 400
-            current_user.email = data['email']
-        if 'phone' in data:
-            current_user.phone = data['phone']
-        if 'department' in data:
-            current_user.department = data['department']
-        if 'position' in data:
-            current_user.position = data['position']
-        
-        # 如果提供了新密码
-        if 'password' in data and data['password']:
-            current_user.set_password(data['password'])
-        
-        current_user.updated_at = datetime.utcnow()
-        db.session.commit()
-        
-        return jsonify({'message': 'Profile updated successfully', 'user': current_user.to_dict()}), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'message': str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
 @auth_bp.route('/logout', methods=['POST'])
-@token_required
-def logout(current_user):
-    # 在实际应用中，可以将token加入黑名单
-    return jsonify({'message': 'Logged out successfully'}), 200
+def logout():
+    """用户登出"""
+    return jsonify({'message': '登出成功'})
+
+@auth_bp.route('/me', methods=['GET'])
+def get_current_user():
+    """获取当前用户信息"""
+    try:
+        # 从请求头获取token
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({'error': '未提供认证令牌'}), 401
+        
+        token = auth_header.split(' ')[1]
+        
+        # 验证token
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            user_id = payload.get('user_id')
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': '令牌已过期'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': '无效的令牌'}), 401
+        
+        # 获取用户信息
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': '用户不存在'}), 404
+        
+        return jsonify({'user': user.to_dict()})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def require_auth(f):
+    """认证装饰器"""
+    from functools import wraps
+    
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({'error': '未提供认证令牌'}), 401
+        
+        token = auth_header.split(' ')[1]
+        
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            request.current_user_id = payload.get('user_id')
+            request.current_user = User.query.get(request.current_user_id)
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': '令牌已过期'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': '无效的令牌'}), 401
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function
 

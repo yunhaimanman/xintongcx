@@ -6,14 +6,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from src.models.user import db
-from src.models.customer import Customer, Lead, Opportunity, Contact, Activity
-from src.models.project import Project, Task, TaskComment
-from src.models.ticket import ServiceCategory, Ticket, TicketComment, KnowledgeBase
 from src.routes.user import user_bp
 from src.routes.auth import auth_bp
-from src.routes.customer import customer_bp
-from src.routes.project import project_bp
-from src.routes.ticket import ticket_bp
+from src.routes.employee import employee_bp
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
@@ -24,9 +19,7 @@ CORS(app)
 # 注册蓝图
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(user_bp, url_prefix='/api/users')
-app.register_blueprint(customer_bp, url_prefix='/api/customers')
-app.register_blueprint(project_bp, url_prefix='/api/projects')
-app.register_blueprint(ticket_bp, url_prefix='/api/tickets')
+app.register_blueprint(employee_bp, url_prefix='/api/employees')
 
 # 数据库配置
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
@@ -55,4 +48,4 @@ def serve(path):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5002, debug=True)
