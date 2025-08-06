@@ -61,6 +61,8 @@ def create_customer(current_user):
             address=data.get('address'),
             industry=data.get('industry'),
             source=data.get('source'),
+            position=data.get('position'),
+            level=data.get('level'),
             status=data.get('status', 'active'),
             assigned_to=data.get('assigned_to')
         )
@@ -106,6 +108,10 @@ def update_customer(current_user, customer_id):
             customer.industry = data['industry']
         if 'source' in data:
             customer.source = data['source']
+        if 'position' in data:
+            customer.position = data['position']
+        if 'level' in data:
+            customer.level = data['level']
         if 'status' in data:
             customer.status = data['status']
         if 'assigned_to' in data:

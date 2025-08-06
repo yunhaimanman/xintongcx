@@ -440,6 +440,85 @@ function Users() {
                   <DialogTitle>新增角色</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleCreateRole} className="space-y-4">
+                  {/* 预设角色模板 */}
+                  <div>
+                    <Label>快速创建预设角色</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRoleForm({
+                          name: '客户总监',
+                          description: '负责客户关系管理和业务拓展',
+                          permissions: ['customer_manage', 'project_manage', 'report_view']
+                        })}
+                      >
+                        客户总监
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRoleForm({
+                          name: '销售经理',
+                          description: '负责销售业务和客户维护',
+                          permissions: ['customer_manage', 'project_manage', 'ticket_manage']
+                        })}
+                      >
+                        销售经理
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRoleForm({
+                          name: '项目经理',
+                          description: '负责项目管理和执行',
+                          permissions: ['project_manage', 'ticket_manage', 'report_view']
+                        })}
+                      >
+                        项目经理
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRoleForm({
+                          name: '客服专员',
+                          description: '负责客户服务和工单处理',
+                          permissions: ['ticket_manage', 'customer_manage']
+                        })}
+                      >
+                        客服专员
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRoleForm({
+                          name: '系统管理员',
+                          description: '负责系统管理和用户权限管理',
+                          permissions: ['user_manage', 'role_manage', 'department_manage', 'system_settings']
+                        })}
+                      >
+                        系统管理员
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRoleForm({
+                          name: '普通员工',
+                          description: '基础权限用户',
+                          permissions: ['report_view']
+                        })}
+                      >
+                        普通员工
+                      </Button>
+                    </div>
+                  </div>
+                  
                   <div>
                     <Label htmlFor="role-name">角色名称 *</Label>
                     <Input

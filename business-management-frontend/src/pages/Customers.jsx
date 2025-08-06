@@ -31,7 +31,9 @@ function Customers() {
     phone: '',
     address: '',
     industry: '',
-    source: ''
+    source: '',
+    position: '',
+    level: ''
   });
 
   const [leadForm, setLeadForm] = useState({
@@ -109,7 +111,9 @@ function Customers() {
           phone: '',
           address: '',
           industry: '',
-          source: ''
+          source: '',
+          position: '',
+          level: ''
         });
         fetchData();
       }
@@ -288,6 +292,29 @@ function Customers() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <Label htmlFor="position">职位</Label>
+                  <Input
+                    id="position"
+                    value={customerForm.position}
+                    onChange={(e) => setCustomerForm({...customerForm, position: e.target.value})}
+                    placeholder="如：总经理、采购主管等"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="level">客户级别</Label>
+                  <Select value={customerForm.level} onValueChange={(value) => setCustomerForm({...customerForm, level: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择客户级别" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A">A级客户（重要客户）</SelectItem>
+                      <SelectItem value="B">B级客户（一般客户）</SelectItem>
+                      <SelectItem value="C">C级客户（潜在客户）</SelectItem>
+                      <SelectItem value="VIP">VIP客户</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex justify-end space-x-2">
                   <Button type="button" variant="outline" onClick={() => setShowCustomerDialog(false)}>
                     取消
@@ -396,6 +423,19 @@ function Customers() {
                         <Phone className="w-3 h-3 mr-2" />
                         {customer.phone}
                       </p>
+                    )}
+                    {customer.position && (
+                      <p className="text-sm text-muted-foreground">
+                        职位: {customer.position}
+                      </p>
+                    )}
+                    {customer.level && (
+                      <div className="flex items-center">
+                        <span className="text-sm text-muted-foreground mr-2">级别:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {customer.level}级客户
+                        </Badge>
+                      </div>
                     )}
                     {customer.industry && (
                       <p className="text-sm text-muted-foreground">

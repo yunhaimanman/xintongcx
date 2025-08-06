@@ -10,6 +10,8 @@ class Customer(db.Model):
     address = db.Column(db.Text)
     industry = db.Column(db.String(100))
     source = db.Column(db.String(50))  # 客户来源：网站、推荐、广告等
+    position = db.Column(db.String(100))  # 职位
+    level = db.Column(db.String(10))  # 客户级别：A、B、C、VIP
     status = db.Column(db.String(20), default='active')  # active, inactive, potential
     assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -34,6 +36,8 @@ class Customer(db.Model):
             'address': self.address,
             'industry': self.industry,
             'source': self.source,
+            'position': self.position,
+            'level': self.level,
             'status': self.status,
             'assigned_to': self.assigned_to,
             'created_at': self.created_at.isoformat() if self.created_at else None,
