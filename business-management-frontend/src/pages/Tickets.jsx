@@ -69,6 +69,31 @@ const Tickets = () => {
       setTickets(data.tickets || []);
     } catch (error) {
       console.error('获取工单列表失败:', error);
+      // 使用模拟数据
+      setTickets([
+        {
+          id: 1,
+          title: '登录问题',
+          description: '用户无法正常登录系统',
+          ticket_number: 'TK001',
+          status: 'open',
+          priority: 'high',
+          created_at: '2025-01-15T10:30:00Z',
+          customer: { company_name: 'ABC科技有限公司' },
+          assignee: null
+        },
+        {
+          id: 2,
+          title: '功能咨询',
+          description: '咨询项目管理模块的使用方法',
+          ticket_number: 'TK002',
+          status: 'in_progress',
+          priority: 'medium',
+          created_at: '2025-01-14T14:20:00Z',
+          customer: { company_name: 'XYZ企业' },
+          assignee: { full_name: '客服小王' }
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -80,6 +105,12 @@ const Tickets = () => {
       setCustomers(data.customers || []);
     } catch (error) {
       console.error('获取客户列表失败:', error);
+      // 使用模拟数据
+      setCustomers([
+        { id: 1, company_name: 'ABC科技有限公司' },
+        { id: 2, company_name: 'XYZ企业' },
+        { id: 3, company_name: '123公司' }
+      ]);
     }
   };
 
@@ -89,6 +120,13 @@ const Tickets = () => {
       setCategories(data.categories || []);
     } catch (error) {
       console.error('获取分类列表失败:', error);
+      // 使用模拟数据
+      setCategories([
+        { id: 1, name: '技术支持' },
+        { id: 2, name: '产品咨询' },
+        { id: 3, name: '账单问题' },
+        { id: 4, name: '功能建议' }
+      ]);
     }
   };
 

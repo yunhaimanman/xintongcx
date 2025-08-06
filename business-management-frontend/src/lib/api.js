@@ -1,5 +1,5 @@
 // API基础配置
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'https://5001-iq4r3ltfr3kyo4o2sjb84-da0a69c5.manusvm.computer/api';
 
 // 获取token
 const getToken = () => {
