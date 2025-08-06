@@ -19,7 +19,7 @@ app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'sta
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
 # 启用CORS支持
-CORS(app, origins=['http://localhost:5173', 'https://ibqcwhit.manus.space', 'https://mqaudlmo.manus.space'], supports_credentials=True)
+CORS(app, origins=['http://localhost:5173', 'https://5173-idlqbrp5c0ay8xpim0rcr-1c49febc.manusvm.computer', 'https://ibqcwhit.manus.space', 'https://mqaudlmo.manus.space'], supports_credentials=True)
 
 # 注册蓝图
 app.register_blueprint(auth_bp, url_prefix='/api/auth')

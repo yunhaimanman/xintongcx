@@ -12,10 +12,16 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0',
+    allowedHosts: [
+      '5173-idlqbrp5c0ay8xpim0rcr-1c49febc.manusvm.computer',
+      '5174-idlqbrp5c0ay8xpim0rcr-1c49febc.manusvm.computer'
+    ],
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
-        changeOrigin: true
+        target: 'https://5001-idlqbrp5c0ay8xpim0rcr-1c49febc.manusvm.computer',
+        changeOrigin: true,
+        secure: false
       }
     }
   }
